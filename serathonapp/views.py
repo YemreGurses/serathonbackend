@@ -1,13 +1,21 @@
 import json
 import sys
 
-from rest_framework.generics import RetrieveAPIView, CreateAPIView
-from serathonapp import serializers
-from django.shortcuts import render
 import requests
-# Create your views here.
-from rest_framework.views import APIView
+from chatterbot import ChatBot
+from chatterbot.ext.django_chatterbot import settings
+from chatterbot.trainers import ChatterBotCorpusTrainer
+from django.http import JsonResponse
+
+from django.views.generic.base import TemplateView
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, UpdateAPIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from serathonapp import serializers
+from serathonapp.train import chatbot
+from textblob import TextBlob
+
 
 tradesoft_token = "vMWKBzqi-lBFy-VhCF-qNXr"
 owner = "100421-100"
@@ -19,8 +27,8 @@ import nlp_api
 
 nlp_engine = nlp_api.NlpBase()
 
-class EmirGiris(CreateAPIView):
 
+class EmirGiris(CreateAPIView):
     serializer_class = serializers.EmirGirisSerializer
 
     def post(self, request):
@@ -31,11 +39,11 @@ class EmirGiris(CreateAPIView):
         headers = {'Content-type': 'application/json'}
         url = "https://ts.tradesoft.com.tr/Serathonin/EQ/addOrder"
         data_cre = dict(token=tradesoft_token, tradesoft_token=owner, accountExtId=owner,
-                         finInst=data["finInst"], orderDate=data["orderDate"],
-                         orderType=data["orderType"], orderTimeInForce=data["orderTimeInForce"],
-                         orderUnits=data["orderUnits"], orderPrice=data["orderPrice"],
-                         buySell=data["buySell"], shortFall=data["shortFall"], checkOnly=data["checkOnly"],
-                         maxFloor=data["maxFloor"])
+                        finInst=data["finInst"], orderDate=data["orderDate"],
+                        orderType=data["orderType"], orderTimeInForce=data["orderTimeInForce"],
+                        orderUnits=data["orderUnits"], orderPrice=data["orderPrice"],
+                        buySell=data["buySell"], shortFall=data["shortFall"], checkOnly=data["checkOnly"],
+                        maxFloor=data["maxFloor"])
 
         response = requests.request(
             "POST", url, data=json.dumps(data_cre), headers=headers)
@@ -44,7 +52,6 @@ class EmirGiris(CreateAPIView):
 
 
 class EmirIzle(CreateAPIView):
-
     serializer_class = serializers.EmirIzleSerializer
 
     def post(self, request):
@@ -52,7 +59,7 @@ class EmirIzle(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        print(nlp_engine.lemmatize_all("öldürdüm,perde"))
+        print(nlp_engine.lemmatize_all("yatırımlarım,önerebilir,eğitim,hisseler"))
 
         headers = {'Content-type': 'application/json'}
         url = "https://ts.tradesoft.com.tr/Serathonin/EQ/getOrders"
@@ -76,7 +83,7 @@ class KiymetDagilim(CreateAPIView):
         headers = {'Content-type': 'application/json', 'X-Client-Token': oneriver_token}
         url = "https://robodemo.infina.com.tr/robo/api/v0.7L/distribution"
         data = dict(start_amount=data["start_amount"], monthly_amount=data["monthly_amount"],
-                        age=data["age"], risk=data["risk"])
+                    age=data["age"], risk=data["risk"])
 
         response = requests.request(
             "POST", url, data=json.dumps(data), headers=headers)
@@ -85,11 +92,9 @@ class KiymetDagilim(CreateAPIView):
 
 
 class TahminiGetiri(CreateAPIView):
-
     serializer_class = serializers.OneriverSerializer
 
     def post(self, request, *args, **kwargs):
-
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -103,3 +108,70 @@ class TahminiGetiri(CreateAPIView):
             "POST", url, data=json.dumps(data), headers=headers)
 
         return Response(json.loads(response.content))
+
+
+class UpdatePoint(UpdateAPIView):
+    serializer_class = serializers.UpdateSerializer
+
+    def patch(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        user = request.user
+        if data["completed"]:
+            user += 10
+            user.save(update_fields=["point"])
+            return Response({"user": request.user.id, "point": user.point, "detail": "success"},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response({"user": request.user.id, "point": user.point, "detail": "failure"},
+                            status=status.HTTP_304_NOT_MODIFIED)
+
+
+class ChatterBotAppView(TemplateView):
+    template_name = 'app.html'
+
+
+class ChatterBotApiView(APIView):
+    """
+    Provide an API endpoint to interact with Chat Assistant.
+    """
+    # chatterbotex = ChatBot(**settings.CHATTERBOT)
+    def post(self, request, *args, **kwargs):
+        """
+        Return a response to the statement in the posted data.
+        * The JSON data should contain a 'text' attribute.
+        """
+        input_data = json.loads(request.body.decode('utf-8'))
+
+        if 'text' not in input_data:
+            return JsonResponse({
+                'text': [
+                    'The attribute "text" is required.'
+                ]
+            }, status=400)
+
+        input_data = TextBlob(input_data['text']).translate(to="en")
+        response = chatbot.get_response(str(input_data))
+        answer = TextBlob(str(response)).translate(to="tr")
+        response_data = {'response': str(answer)}
+
+        return JsonResponse(response_data, status=200)
+
+    def get(self, request, *args, **kwargs):
+        """
+        Return data corresponding to the current conversation.
+        """
+        return JsonResponse({
+            'name': 'Servet Assistant'
+        })
+
+
+class ChatTrain(APIView):
+
+    def post(self, request, *args, **kwargs):
+        chatterbotex = ChatBot(**settings.CHATTERBOT)
+        trainer = ChatterBotCorpusTrainer(chatterbotex)
+        trainer.train("chatterbot.corpus.english")
+        return Response({"detail": "success"}, status=status.HTTP_200_OK)
+

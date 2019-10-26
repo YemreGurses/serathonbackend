@@ -40,3 +40,7 @@ class OneriverSerializer(serializers.Serializer):
     monthly_amount = serializers.CharField(required=True)
     age = serializers.IntegerField(required=True)
     risk = serializers.CharField(required=True)
+
+
+class UpdateSerializer(serializers.Serializer):
+    completed = serializers.BooleanField(required=True)

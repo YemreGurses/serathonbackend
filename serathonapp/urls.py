@@ -10,6 +10,9 @@ from serathonapp import views
 urlpatterns = [
     path('tradesoft/EmirGiris/', views.EmirGiris.as_view(), name='EmirGiris'),
     path('tradesoft/EmirIzle/', views.EmirIzle.as_view(), name='EmirIzle'),
-    path('KiymetDagilimOner/', views.KiymetDagilim.as_view(), name='KiymetDagilim'),
-    path('TahminiGetiri/', views.TahminiGetiri.as_view(), name='TahminiGetiri'),
+    path('oneriver/KiymetDagilimOner/', views.KiymetDagilim.as_view(), name='KiymetDagilim'),
+    path('oneriver/TahminiGetiri/', views.TahminiGetiri.as_view(), name='TahminiGetiri'),
+    path('updatepoint/', views.UpdatePoint.as_view(), name='UpdatePoint'),
+    path('chat/', views.ChatterBotApiView.as_view(), name='ChatterBotApiView'),
+    path('trainchat/', views.ChatTrain.as_view(), name='ChatTrain'),
 ]

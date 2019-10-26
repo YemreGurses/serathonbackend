@@ -25,7 +25,8 @@ SECRET_KEY = 'k0x2ksv3)d5)mwls@ims)!wvjtl1e)-^s--$xl4#9pl-gvg)9k'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', "localhost", "213.74.44.213"]
+
 
 
 # Application definition
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_auth',
     'django_filters',
+    'chatterbot.ext.django_chatterbot',
 
     # Required for allauth
     'django.contrib.sites',
@@ -205,3 +207,19 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
 DEFAULT_FROM_EMAIL = ''
 #
+
+
+CHATTERBOT = {
+    'name': 'Servet Destek',
+    'logic_adapters': [
+        'chatterbot.logic.MathematicalEvaluation',
+        'chatterbot.logic.TimeLogicAdapter',
+        'chatterbot.logic.BestMatch'
+    ],
+    'training_data': [
+        'chatterbot.corpus.english',
+    ],
+    'storage_adapter': 'chatterbot.storage.SQLStorageAdapter',
+    'database_uri': 'sqlite:///database.sqlite3',
+    'trainer': 'chatterbot.trainers.ChatterBotCorpusTrainer',
+}

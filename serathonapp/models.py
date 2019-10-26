@@ -1,3 +1,4 @@
+from chatterbot.ext.django_chatterbot.abstract_models import AbstractBaseStatement, AbstractBaseTag
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -18,6 +19,7 @@ class Profile(models.Model):
     age = models.IntegerField(blank=True, default=0)
     risk_level = models.SmallIntegerField(default=1)
     education = models.CharField(blank=True, max_length=50)
+    point = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.email
