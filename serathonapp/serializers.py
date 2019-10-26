@@ -16,3 +16,27 @@ class UserSerializer(UserDetailsSerializer):
                                                       'age',
                                                       'education',
                                                       'risk_level')
+
+
+class EmirGirisSerializer(serializers.Serializer):
+    finInst = serializers.CharField(required=True)
+    orderDate = serializers.CharField(required=True)
+    orderType = serializers.IntegerField(required=True)
+    orderTimeInForce = serializers.CharField(required=True)
+    orderUnits = serializers.IntegerField(required=True)
+    orderPrice = serializers.FloatField(required=True)
+    buySell = serializers.CharField(required=True)
+    shortFall = serializers.IntegerField(required=True)
+    checkOnly = serializers.IntegerField(required=True)
+    maxFloor = serializers.IntegerField(required=True)
+
+
+class EmirIzleSerializer(serializers.Serializer):
+    transactionId = serializers.CharField(required=True)
+
+
+class OneriverSerializer(serializers.Serializer):
+    start_amount = serializers.CharField(required=True)
+    monthly_amount = serializers.CharField(required=True)
+    age = serializers.IntegerField(required=True)
+    risk = serializers.CharField(required=True)

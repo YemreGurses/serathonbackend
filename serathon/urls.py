@@ -23,6 +23,6 @@ urlpatterns = [
     path('rest-auth/', include('rest_auth.urls')),
     path('rest-auth/registration/', include('rest_auth.registration.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('docs/', include_docs_urls(title='Serathon API', public=True, authentication_classes=[],
+    path('docs/', include_docs_urls(title='Servet API', public=True, authentication_classes=[],
                                     permission_classes=[])),
 ]

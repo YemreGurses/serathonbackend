@@ -8,6 +8,8 @@ from serathonapp import views
 # library_router.register(r'', views.LibraryViewSet)
 
 urlpatterns = [
-    path('EmirGiris/', views.EmirGiris.as_view(), name='EmirGiris'),
-    path('EmirIzle/', views.EmirIzle.as_view(), name='EmirIzle'),
+    path('tradesoft/EmirGiris/', views.EmirGiris.as_view(), name='EmirGiris'),
+    path('tradesoft/EmirIzle/', views.EmirIzle.as_view(), name='EmirIzle'),
+    path('KiymetDagilimOner/', views.KiymetDagilim.as_view(), name='KiymetDagilim'),
+    path('TahminiGetiri/', views.TahminiGetiri.as_view(), name='TahminiGetiri'),
 ]
